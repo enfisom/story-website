@@ -1,133 +1,1004 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <title>THE UniBot AI</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#0d0e13">
+  <title>Squiboom Assistant Intelligence</title>
   <style>
+    :root {
+      color-scheme: dark;
+      --bg: #0c0d12;
+      --panel: rgba(20, 21, 29, .82);
+      --panel-strong: #171821;
+      --line: rgba(255, 255, 255, .075);
+      --muted: #8d90a1;
+      --text: #f3f2f7;
+      --purple: #a78bfa;
+      --blue: #7c9cff;
+      --green: #83d6ab;
+      --red: #ff8e9b;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-synthesis: none;
+      text-rendering: optimizeLegibility;
+    }
+
+    * { box-sizing: border-box; }
     body {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-      background: #121212;
-      color: white;
-      padding: 0;
       margin: 0;
-      display: flex;
-      flex-direction: column;
+      min-width: 320px;
       height: 100vh;
+      overflow: hidden;
+      color: var(--text);
+      background:
+        radial-gradient(ellipse at 68% -12%, rgba(116, 87, 206, .17), transparent 38%),
+        radial-gradient(ellipse at 100% 70%, rgba(47, 91, 178, .10), transparent 32%),
+        var(--bg);
     }
-
-    header {
-      padding: 16px;
-      text-align: center;
-      background: #1f1f1f;
-      font-size: 1.5rem;
-      font-weight: bold;
-      border-bottom: 1px solid #333;
-    }
-
-    #chat {
-      flex: 1;
-      overflow-y: auto;
-      padding: 20px;
-    }
-
-    .msg {
-      margin-bottom: 15px;
-    }
-
-    .user {
-      text-align: right;
-      color: #00e0ff;
-    }
-
-    .ai {
-      text-align: left;
-      color: #ffd700;
-    }
-
-    #inputBox {
+    button, input, textarea, select { font: inherit; }
+    button { color: inherit; }
+    .app { display: flex; width: 100%; height: 100%; }
+    .sidebar {
+      z-index: 2;
       display: flex;
-      border-top: 1px solid #333;
+      flex: 0 0 268px;
+      flex-direction: column;
+      min-width: 0;
+      padding: 23px 15px 15px;
+      border-right: 1px solid var(--line);
+      background: rgba(15, 16, 22, .76);
+      backdrop-filter: blur(26px);
     }
-
-    input {
-      flex: 1;
-      padding: 15px;
-      border: none;
-      background: #1a1a1a;
-      color: white;
-      font-size: 1rem;
+    .brand { display: flex; align-items: center; gap: 11px; padding: 0 8px; }
+    .brand-mark {
+      display: grid;
+      width: 36px;
+      height: 36px;
+      place-items: center;
+      border: 1px solid rgba(185, 164, 255, .3);
+      border-radius: 12px;
+      color: #e7dcff;
+      background: linear-gradient(145deg, rgba(164, 132, 255, .29), rgba(92, 113, 237, .12));
+      box-shadow: 0 4px 24px rgba(134, 101, 240, .17), inset 0 1px rgba(255,255,255,.12);
     }
-
-    button {
-      padding: 15px 20px;
-      background: #00e0ff;
-      color: black;
-      border: none;
+    .brand-mark svg { width: 20px; height: 20px; }
+    .brand-name { font-size: 15px; font-weight: 720; letter-spacing: .02em; }
+    .brand-subtitle { margin-top: 2px; color: var(--muted); font-size: 10px; letter-spacing: .12em; text-transform: uppercase; }
+    .new-chat {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 9px;
+      width: 100%;
+      margin: 30px 0 25px;
+      padding: 11px 12px;
+      border: 1px solid rgba(174, 151, 255, .26);
+      border-radius: 11px;
+      background: linear-gradient(110deg, rgba(139, 107, 230, .2), rgba(83, 106, 202, .15));
+      cursor: pointer;
+      transition: border-color .2s, background .2s, transform .2s;
+    }
+    .new-chat:hover { transform: translateY(-1px); border-color: rgba(190, 171, 255, .5); background: rgba(145, 118, 228, .24); }
+    .new-chat svg { width: 16px; height: 16px; color: #c9b8ff; }
+    .section-label { padding: 0 9px; color: #777a8a; font-size: 10px; font-weight: 650; letter-spacing: .13em; text-transform: uppercase; }
+    .history { display: flex; flex: 1; flex-direction: column; gap: 4px; min-height: 0; margin: 11px -3px 0; overflow-y: auto; }
+    .history-empty { padding: 13px 10px; color: #747787; font-size: 12px; line-height: 1.6; }
+    .history-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      width: 100%;
+      min-width: 0;
+      padding: 10px 10px;
+      border: 1px solid transparent;
+      border-radius: 9px;
+      color: #b7b8c5;
+      background: transparent;
+      text-align: left;
+      cursor: pointer;
+      transition: background .16s, color .16s;
+    }
+    .history-item:hover, .history-item.active { color: var(--text); background: rgba(255,255,255,.055); }
+    .history-item.active { border-color: rgba(255,255,255,.045); }
+    .history-item svg { flex: 0 0 auto; width: 15px; height: 15px; color: #888b9c; }
+    .history-title { overflow: hidden; font-size: 12px; text-overflow: ellipsis; white-space: nowrap; }
+    .sidebar-footer { padding-top: 13px; border-top: 1px solid var(--line); }
+    .connection-row { display: flex; align-items: center; gap: 9px; padding: 10px 9px 13px; }
+    .status-dot { width: 8px; height: 8px; border-radius: 50%; background: #777987; box-shadow: 0 0 0 3px rgba(130,132,147,.1); }
+    .status-dot.online { background: var(--green); box-shadow: 0 0 0 3px rgba(131,214,171,.11), 0 0 12px rgba(131,214,171,.45); }
+    .status-dot.checking { background: #e7bd72; box-shadow: 0 0 0 3px rgba(231,189,114,.1); animation: pulse 1.3s infinite; }
+    .status-dot.offline { background: var(--red); box-shadow: 0 0 0 3px rgba(255,142,155,.1); }
+    @keyframes pulse { 50% { opacity: .4; } }
+    .connection-text { color: #b7b8c5; font-size: 11px; }
+    .connection-sub { margin-top: 3px; color: #737685; font-size: 10px; }
+    .settings-button {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      width: 100%;
+      padding: 10px 9px;
+      border: 0;
+      border-radius: 9px;
+      color: #a9aab8;
+      background: transparent;
+      font-size: 12px;
+      text-align: left;
       cursor: pointer;
     }
+    .settings-button:hover { color: white; background: rgba(255,255,255,.05); }
+    .settings-button svg { width: 16px; height: 16px; }
 
-    button:hover {
-      background: #00bcd4;
+    .main { display: flex; flex: 1; flex-direction: column; min-width: 0; }
+    .topbar {
+      display: flex;
+      flex: 0 0 68px;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      padding: 0 30px;
+      border-bottom: 1px solid var(--line);
+      background: rgba(13, 14, 19, .45);
+      backdrop-filter: blur(20px);
+    }
+    .topbar-left { display: flex; align-items: center; gap: 12px; min-width: 0; }
+    .current-label { color: #858796; font-size: 11px; }
+    .model-select {
+      max-width: min(250px, 42vw);
+      padding: 8px 29px 8px 10px;
+      border: 1px solid var(--line);
+      border-radius: 9px;
+      outline: none;
+      color: #e8e7f0;
+      background: rgba(255,255,255,.04);
+      font-size: 12px;
+      cursor: pointer;
+    }
+    select option { color: #f3f2f7; background: #171821; }
+    .topbar-actions { display: flex; align-items: center; gap: 7px; }
+    .icon-button {
+      display: grid;
+      width: 34px;
+      height: 34px;
+      place-items: center;
+      border: 1px solid transparent;
+      border-radius: 9px;
+      color: #9294a3;
+      background: transparent;
+      cursor: pointer;
+      transition: color .16s, background .16s, border-color .16s;
+    }
+    .icon-button:hover { color: white; border-color: var(--line); background: rgba(255,255,255,.05); }
+    .icon-button svg { width: 16px; height: 16px; }
+    .scroll-area { flex: 1; min-height: 0; overflow-y: auto; scroll-behavior: smooth; }
+    .welcome {
+      display: flex;
+      min-height: 100%;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 45px 24px 60px;
+      text-align: center;
+      animation: appear .45s ease both;
+    }
+    @keyframes appear { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+    .welcome-orb {
+      display: grid;
+      width: 64px;
+      height: 64px;
+      margin-bottom: 24px;
+      place-items: center;
+      border: 1px solid rgba(191, 170, 255, .25);
+      border-radius: 21px;
+      color: #ded3ff;
+      background: linear-gradient(145deg, rgba(158, 124, 255, .2), rgba(79, 111, 218, .12));
+      box-shadow: 0 10px 55px rgba(115, 86, 207, .19), inset 0 1px rgba(255,255,255,.14);
+    }
+    .welcome-orb svg { width: 31px; height: 31px; }
+    .welcome h1 { margin: 0; font-size: clamp(24px, 3vw, 34px); font-weight: 630; letter-spacing: -.045em; }
+    .welcome h1 span { color: #bba8ff; }
+    .welcome > p { max-width: 440px; margin: 12px 0 30px; color: #9294a3; font-size: 13px; line-height: 1.75; }
+    .suggestions { display: grid; width: min(100%, 620px); grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; text-align: left; }
+    .suggestion {
+      min-height: 74px;
+      padding: 13px 14px;
+      border: 1px solid rgba(255,255,255,.08);
+      border-radius: 12px;
+      color: #d7d6e0;
+      background: rgba(255,255,255,.027);
+      cursor: pointer;
+      transition: transform .18s, border-color .18s, background .18s;
+    }
+    .suggestion:hover { transform: translateY(-2px); border-color: rgba(171, 148, 255, .27); background: rgba(149, 124, 232, .08); }
+    .suggestion strong { display: block; margin-bottom: 5px; font-size: 11px; font-weight: 570; }
+    .suggestion span { color: #878997; font-size: 10px; line-height: 1.45; }
+    .messages { width: min(100%, 850px); margin: 0 auto; padding: 32px 28px 45px; }
+    .message { display: flex; gap: 13px; margin-bottom: 27px; animation: appear .22s ease both; }
+    .avatar {
+      display: grid;
+      flex: 0 0 30px;
+      width: 30px;
+      height: 30px;
+      place-items: center;
+      border: 1px solid rgba(255,255,255,.09);
+      border-radius: 10px;
+      color: #aeb0bf;
+      background: rgba(255,255,255,.055);
+    }
+    .message.assistant .avatar { border-color: rgba(173, 149, 255, .24); color: #d6c9ff; background: linear-gradient(145deg, rgba(157, 125, 245, .2), rgba(77, 104, 210, .12)); }
+    .avatar svg { width: 16px; height: 16px; }
+    .message-body { min-width: 0; flex: 1; padding-top: 2px; }
+    .message-heading { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; color: #e0dfeb; font-size: 11px; font-weight: 620; }
+    .message-heading time { color: #737685; font-size: 10px; font-weight: 400; }
+    .message-content { overflow-wrap: anywhere; color: #c8c8d2; font-size: 13px; line-height: 1.75; }
+    .message.user .message-content { white-space: pre-wrap; }
+    .message-content p { margin: 0 0 12px; }
+    .message-content p:last-child { margin-bottom: 0; }
+    .message-content h1, .message-content h2, .message-content h3 { margin: 20px 0 8px; color: #f0eef7; line-height: 1.35; }
+    .message-content h1 { font-size: 20px; }
+    .message-content h2 { font-size: 17px; }
+    .message-content h3 { font-size: 14px; }
+    .message-content ul, .message-content ol { margin: 5px 0 13px; padding-left: 22px; }
+    .message-content li { padding-left: 3px; margin: 3px 0; }
+    .message-content blockquote { margin: 10px 0; padding: 2px 0 2px 13px; border-left: 2px solid #9e87ed; color: #a9a9b8; }
+    .message-content a { color: #b8a7ff; text-decoration: underline; text-underline-offset: 3px; }
+    .message-content code:not(pre code) { padding: 2px 5px; border: 1px solid rgba(255,255,255,.07); border-radius: 5px; color: #dbcfff; background: rgba(255,255,255,.055); font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: .92em; }
+    .code-block { margin: 12px 0 14px; overflow: hidden; border: 1px solid rgba(255,255,255,.09); border-radius: 10px; background: rgba(9,10,14,.82); }
+    .code-header { display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; border-bottom: 1px solid rgba(255,255,255,.07); color: #898b9a; font-size: 10px; }
+    .code-block pre { margin: 0; padding: 13px 14px; overflow: auto; color: #d4d3de; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 11px; line-height: 1.7; tab-size: 2; }
+    .code-block code { font: inherit; }
+    .token-keyword { color: #c4a4ff; }
+    .token-string { color: #a9d8b5; }
+    .token-number { color: #edbd89; }
+    .token-comment { color: #777d8d; font-style: italic; }
+    .message-tools { display: flex; gap: 5px; margin-top: 7px; opacity: .65; }
+    .message-tools .icon-button { width: 27px; height: 27px; }
+    .message-tools .icon-button svg { width: 14px; height: 14px; }
+    .stream-cursor { display: inline-block; width: 6px; height: 14px; margin-left: 2px; vertical-align: -2px; border-radius: 2px; background: #b4a1ff; animation: blink .85s step-end infinite; }
+    @keyframes blink { 50% { opacity: 0; } }
+    .retry-row { display: flex; align-items: center; gap: 8px; margin-top: 10px; color: #ff9aa6; font-size: 11px; }
+    .retry-button { padding: 5px 9px; border: 1px solid rgba(255,142,155,.22); border-radius: 7px; color: #ffc0c7; background: rgba(255,142,155,.08); cursor: pointer; }
+    .retry-button:hover { background: rgba(255,142,155,.15); }
+
+    .composer-wrap { padding: 10px 24px 20px; background: linear-gradient(0deg, #0c0d12 64%, rgba(12,13,18,0)); }
+    .composer {
+      width: min(100%, 790px);
+      margin: 0 auto;
+      padding: 12px 12px 9px 15px;
+      border: 1px solid rgba(255,255,255,.11);
+      border-radius: 15px;
+      background: rgba(25, 26, 34, .84);
+      box-shadow: 0 10px 45px rgba(0,0,0,.24), inset 0 1px rgba(255,255,255,.035);
+      backdrop-filter: blur(18px);
+      transition: border-color .2s, box-shadow .2s;
+    }
+    .composer:focus-within { border-color: rgba(168, 144, 255, .35); box-shadow: 0 10px 45px rgba(0,0,0,.24), 0 0 0 3px rgba(155, 128, 237, .055); }
+    .composer textarea { display: block; width: 100%; min-height: 27px; max-height: 180px; resize: none; border: 0; outline: 0; color: #ecebf2; background: transparent; font-size: 13px; line-height: 1.65; }
+    .composer textarea::placeholder { color: #777987; }
+    .composer-bottom { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 8px; }
+    .composer-hint { color: #777987; font-size: 10px; }
+    .composer-right { display: flex; align-items: center; gap: 10px; }
+    .model-hint { max-width: 210px; overflow: hidden; color: #868897; font-size: 10px; text-overflow: ellipsis; white-space: nowrap; }
+    .send-button {
+      display: grid;
+      width: 32px;
+      height: 32px;
+      place-items: center;
+      border: 1px solid rgba(190, 171, 255, .3);
+      border-radius: 10px;
+      color: #f1eaff;
+      background: linear-gradient(145deg, #9074db, #697bd7);
+      box-shadow: 0 3px 13px rgba(111, 94, 206, .24);
+      cursor: pointer;
+      transition: transform .15s, opacity .15s;
+    }
+    .send-button:hover { transform: translateY(-1px); }
+    .send-button:disabled { opacity: .45; cursor: default; transform: none; }
+    .send-button svg { width: 15px; height: 15px; }
+    .disclaimer { margin: 9px auto 0; color: #656876; font-size: 9px; text-align: center; }
+
+    .modal-backdrop { position: fixed; z-index: 5; inset: 0; display: grid; padding: 20px; place-items: center; background: rgba(4,5,8,.67); backdrop-filter: blur(9px); animation: appear .15s ease both; }
+    .modal { width: min(100%, 480px); padding: 22px; border: 1px solid rgba(255,255,255,.12); border-radius: 17px; background: #171821; box-shadow: 0 25px 90px rgba(0,0,0,.55); }
+    .modal-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
+    .modal-head h2 { margin: 0; font-size: 16px; font-weight: 640; }
+    .field { margin-bottom: 15px; }
+    .field label { display: block; margin-bottom: 7px; color: #c8c8d2; font-size: 11px; font-weight: 550; }
+    .field input { width: 100%; padding: 10px 11px; border: 1px solid rgba(255,255,255,.1); border-radius: 9px; outline: 0; color: #e5e4ec; background: rgba(0,0,0,.2); font-size: 12px; }
+    .field input:focus { border-color: rgba(168,144,255,.48); }
+    .field-help { margin-top: 6px; color: #777987; font-size: 10px; line-height: 1.5; }
+    .modal-message { min-height: 16px; margin: 2px 0 12px; color: #ff9aa6; font-size: 11px; }
+    .modal-actions { display: flex; justify-content: flex-end; gap: 8px; }
+    .secondary-button, .primary-button { padding: 9px 13px; border: 1px solid rgba(255,255,255,.1); border-radius: 8px; cursor: pointer; font-size: 11px; }
+    .secondary-button { color: #c0c0cb; background: rgba(255,255,255,.04); }
+    .primary-button { border-color: rgba(183,160,255,.32); color: white; background: rgba(142,115,223,.3); }
+    .primary-button:hover { background: rgba(142,115,223,.42); }
+    .toast { position: fixed; z-index: 8; bottom: 93px; left: 50%; padding: 9px 13px; transform: translateX(-50%); border: 1px solid rgba(255,255,255,.11); border-radius: 9px; color: #e7e5ef; background: #22232d; box-shadow: 0 8px 25px rgba(0,0,0,.3); font-size: 11px; animation: appear .18s ease both; }
+    .mobile-new { display: none; }
+
+    @media (max-width: 700px) {
+      .sidebar { flex-basis: 226px; }
+      .topbar { padding: 0 17px; }
+    }
+    @media (max-width: 560px) {
+      .sidebar { position: absolute; inset: 0 auto 0 0; width: min(82vw, 290px); transform: translateX(-102%); transition: transform .22s ease; box-shadow: 20px 0 50px rgba(0,0,0,.32); }
+      .sidebar.open { transform: translateX(0); }
+      .mobile-new { display: grid; }
+      .topbar { flex-basis: 58px; gap: 7px; padding: 0 12px; }
+      .topbar-left { gap: 8px; }
+      .current-label { display: none; }
+      .model-select { max-width: 48vw; }
+      .messages { padding: 24px 17px 35px; }
+      .composer-wrap { padding: 8px 12px 14px; }
+      .suggestions { grid-template-columns: 1fr; }
+      .suggestion { min-height: 61px; }
+      .welcome { padding-top: 34px; }
+      .welcome > p { margin-bottom: 22px; }
     }
   </style>
 </head>
 <body>
-
-  <header>🤖 THE UniBot AI</header>
-
-  <div id="chat"></div>
-
-  <div id="inputBox">
-    <input id="userInput" placeholder="Type something..." />
-    <button onclick="send()">Send</button>
+  <div class="app">
+    <aside class="sidebar" id="sidebar">
+      <div class="brand">
+        <div class="brand-mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M12 2.8 14.2 9l6.5 3-6.5 3-2.2 6.2L9.8 15 3.3 12l6.5-3L12 2.8Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="m18.7 2 .8 2.1 2.1.9-2.1.8-.8 2.1-.9-2.1-2.1-.8 2.1-.9.9-2.1Z" fill="currentColor"/></svg></div>
+        <div><div class="brand-name">SAI Desktop</div><div class="brand-subtitle">Squiboom Intelligence</div></div>
+      </div>
+      <button class="new-chat" id="newChat"><svg viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>New conversation</button>
+      <div class="section-label">Recent conversations</div>
+      <div class="history" id="history"></div>
+      <div class="sidebar-footer">
+        <div class="connection-row">
+          <span class="status-dot checking" id="statusDot"></span>
+          <div><div class="connection-text" id="connectionText">Connecting…</div><div class="connection-sub" id="connectionSub">Checking Ollama server</div></div>
+        </div>
+        <button class="settings-button" id="openSettings"><svg viewBox="0 0 24 24" fill="none"><path d="M12 15.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7Z" stroke="currentColor" stroke-width="1.5"/><path d="m19.4 15 .1.1a1.8 1.8 0 1 1-2.5 2.5l-.1-.1a1.8 1.8 0 0 0-3 .9v.3a1.8 1.8 0 1 1-3.6 0v-.2a1.8 1.8 0 0 0-3-.9l-.2.1a1.8 1.8 0 1 1-2.5-2.5l.2-.1a1.8 1.8 0 0 0-.9-3H3.7a1.8 1.8 0 1 1 0-3.6h.2a1.8 1.8 0 0 0 .9-3l-.1-.2a1.8 1.8 0 1 1 2.5-2.5l.1.2a1.8 1.8 0 0 0 3-.9v-.2a1.8 1.8 0 1 1 3.6 0v.2a1.8 1.8 0 0 0 3 .9l.1-.2a1.8 1.8 0 1 1 2.5 2.5l-.1.2a1.8 1.8 0 0 0 .9 3h.2a1.8 1.8 0 1 1 0 3.6h-.2a1.8 1.8 0 0 0-.9 3Z" stroke="currentColor" stroke-width="1.35" stroke-linecap="round" stroke-linejoin="round"/></svg>Settings</button>
+      </div>
+    </aside>
+    <main class="main">
+      <header class="topbar">
+        <div class="topbar-left">
+          <button class="icon-button mobile-new" id="toggleSidebar" aria-label="Open conversation history"><svg viewBox="0 0 24 24" fill="none"><path d="M4 6h16M4 12h16M4 18h16" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></button>
+          <span class="current-label">Model</span>
+          <select class="model-select" id="modelSelect" aria-label="Choose model"></select>
+        </div>
+        <div class="topbar-actions">
+          <button class="icon-button" id="clearChat" title="Clear this conversation" aria-label="Clear conversation"><svg viewBox="0 0 24 24" fill="none"><path d="M4 7h16M10 11v6m4-6v6M6 7l1 13h10l1-13M9 7V4h6v3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+        </div>
+      </header>
+      <div class="scroll-area" id="scrollArea"></div>
+      <div class="composer-wrap">
+        <form class="composer" id="composer">
+          <textarea id="prompt" rows="1" aria-label="Message SAI" placeholder="Message SAI…"></textarea>
+          <div class="composer-bottom">
+            <span class="composer-hint">Enter to send · Shift + Enter for a new line</span>
+            <div class="composer-right"><span class="model-hint" id="modelHint"></span><button class="send-button" id="sendButton" type="submit" aria-label="Send message"><svg viewBox="0 0 24 24" fill="none"><path d="M12 19V5m-6 6 6-6 6 6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button></div>
+          </div>
+        </form>
+        <div class="disclaimer">SAI runs on your Ollama server. Responses may be inaccurate — verify important information.</div>
+      </div>
+    </main>
   </div>
+  <div id="overlayRoot"></div>
+  <div id="toastRoot" aria-live="polite"></div>
 
   <script>
-    const chat = document.getElementById("chat");
-    const input = document.getElementById("userInput");
+    (() => {
+      "use strict";
+      const DEFAULT_ENDPOINT = "http://192.168.101.12:11434/v1";
+      const DEFAULT_MODEL = "sai-5.5-pp:latest";
+      const KNOWN_MODELS = [DEFAULT_MODEL, "qwen2.5:3b", "qwen3.5:4b"];
+      const STORAGE_KEY = "sai-desktop-v1";
+      const SYSTEM_PROMPT = "You are SAI, a helpful, clear, and thoughtful AI assistant. Be honest about uncertainty. Never claim to have performed actions you have not performed.";
+      const $ = (selector) => document.querySelector(selector);
+      const appState = {
+        endpoint: DEFAULT_ENDPOINT,
+        model: DEFAULT_MODEL,
+        conversations: [],
+        activeId: null,
+        models: [...KNOWN_MODELS],
+        apiKey: "ollama",
+        busy: false,
+        abortController: null,
+        requestTimedOut: false,
+        streamingMessageId: null,
+        errorMessageId: null
+      };
 
-    function send() {
-      const text = input.value.trim();
-      if (!text) return;
-      appendMessage("user", text);
-      input.value = "";
-      respond(text.toLowerCase());
-    }
+      const icons = {
+        assistant: '<svg viewBox="0 0 24 24" fill="none"><path d="m12 3 1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8L12 3Z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/><path d="m19 15 .8 2.2L22 18l-2.2.8L19 21l-.8-2.2L16 18l2.2-.8L19 15Z" fill="currentColor"/></svg>',
+        user: '<svg viewBox="0 0 24 24" fill="none"><path d="M20 21a8 8 0 0 0-16 0M12 12a5 5 0 1 0 0-10 5 5 0 0 0 0 10Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>',
+        chat: '<svg viewBox="0 0 24 24" fill="none"><path d="M20 11.5a7.5 7.5 0 0 1-7.5 7.5H6l-3 2v-9.5A7.5 7.5 0 0 1 10.5 4H12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M16 3v6m-3-3h6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>',
+        copy: '<svg viewBox="0 0 24 24" fill="none"><rect x="8" y="8" width="12" height="12" rx="2" stroke="currentColor" stroke-width="1.5"/><path d="M16 8V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h3" stroke="currentColor" stroke-width="1.5"/></svg>'
+      };
 
-    function appendMessage(sender, text) {
-      const msg = document.createElement("div");
-      msg.className = "msg " + sender;
-      msg.textContent = text;
-      chat.appendChild(msg);
-      chat.scrollTop = chat.scrollHeight;
-    }
-
-    function respond(msg) {
-      let response = "Hmm, I don't understand.";
-
-      if (msg.includes("hi") || msg.includes("hello")) {
-        response = "Hey! How can I help you today?";
-      } else if (msg.includes("who are you")) {
-        response = "I'm THE UniBot AI 🤖, your personal assistant.";
-      } else if (msg.includes("story")) {
-        response = "Sure! Once upon a time in a spooky forest...";
-      } else if (msg.includes("bye")) {
-        response = "Goodbye! See you soon.";
-      } else if (msg.includes("name")) {
-        response = "My name is THE UniBot AI 💡";
+      function escapeHtml(value) {
+        return String(value).replace(/[&<>"']/g, (char) => ({
+          "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
+        })[char]);
       }
 
-      setTimeout(() => {
-        appendMessage("ai", response);
-      }, 600);
-    }
+      function loadState() {
+        try {
+          const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
+          if (typeof saved.endpoint === "string") appState.endpoint = saved.endpoint;
+          if (typeof saved.model === "string") appState.model = saved.model;
+          if (Array.isArray(saved.conversations)) {
+            appState.conversations = saved.conversations
+              .filter((chat) => chat && typeof chat.id === "string" && Array.isArray(chat.messages))
+              .map((chat) => ({
+                id: chat.id,
+                title: typeof chat.title === "string" ? chat.title : "New conversation",
+                updatedAt: Number(chat.updatedAt) || Date.now(),
+                messages: chat.messages.filter((message) =>
+                  message && ["user", "assistant"].includes(message.role) && typeof message.content === "string"
+                ).map((message) => ({ role: message.role, content: message.content }))
+              }));
+          }
+          if (typeof saved.activeId === "string" && appState.conversations.some((chat) => chat.id === saved.activeId)) {
+            appState.activeId = saved.activeId;
+          }
+        } catch (error) {
+          console.warn("Could not load saved SAI conversations.", error);
+          showToast("Saved conversations could not be loaded.");
+        }
+      }
 
-    input.addEventListener("keydown", (e) => {
-      if (e.key === "Enter") send();
-    });
+      function saveState() {
+        try {
+          localStorage.setItem(STORAGE_KEY, JSON.stringify({
+            endpoint: appState.endpoint,
+            model: appState.model,
+            conversations: appState.conversations,
+            activeId: appState.activeId
+          }));
+        } catch (error) {
+          console.error("Could not save SAI conversations.", error);
+          showToast("Could not save conversation history in this browser.");
+        }
+      }
+
+      function activeChat() {
+        return appState.conversations.find((chat) => chat.id === appState.activeId) || null;
+      }
+
+      function newId() {
+        return typeof crypto !== "undefined" && crypto.randomUUID
+          ? crypto.randomUUID()
+          : `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+      }
+
+      function createConversation() {
+        if (appState.busy) return;
+        const chat = { id: newId(), title: "New conversation", updatedAt: Date.now(), messages: [] };
+        appState.conversations.unshift(chat);
+        appState.activeId = chat.id;
+        appState.errorMessageId = null;
+        saveState();
+        render();
+        $("#prompt").focus();
+        $("#sidebar").classList.remove("open");
+      }
+
+      function renderHistory() {
+        const history = $("#history");
+        if (!appState.conversations.length) {
+          history.innerHTML = '<div class="history-empty">Your conversations will appear here.</div>';
+          return;
+        }
+        history.innerHTML = appState.conversations.map((chat) => `
+          <button class="history-item ${chat.id === appState.activeId ? "active" : ""}" data-chat-id="${escapeHtml(chat.id)}" title="${escapeHtml(chat.title)}">
+            ${icons.chat}<span class="history-title">${escapeHtml(chat.title)}</span>
+          </button>`).join("");
+        history.querySelectorAll("[data-chat-id]").forEach((button) => {
+          button.addEventListener("click", () => {
+            if (appState.busy) return;
+            appState.activeId = button.dataset.chatId;
+            appState.errorMessageId = null;
+            saveState();
+            render();
+            $("#sidebar").classList.remove("open");
+          });
+        });
+      }
+
+      function render() {
+        renderHistory();
+        const chat = activeChat();
+        const target = $("#scrollArea");
+        if (!chat || !chat.messages.length) {
+          target.innerHTML = `
+            <section class="welcome">
+              <div class="welcome-orb">${icons.assistant}</div>
+              <h1>A little intelligence,<br><span>a lot of possibility.</span></h1>
+              <p>Meet SAI — your thoughtful AI companion, powered by your own Ollama server. What would you like to explore?</p>
+              <div class="suggestions">
+                <button class="suggestion" data-prompt="Help me brainstorm ideas for a personal project"><strong>✦ &nbsp;Brainstorm something</strong><span>Find a fresh angle for your next idea</span></button>
+                <button class="suggestion" data-prompt="Explain a complex topic in simple terms"><strong>◈ &nbsp;Learn something new</strong><span>Make a tricky topic click</span></button>
+                <button class="suggestion" data-prompt="Help me write a thoughtful message"><strong>⌁ &nbsp;Write with clarity</strong><span>Turn a rough thought into the right words</span></button>
+                <button class="suggestion" data-prompt="What can you help me with?"><strong>↗ &nbsp;Get to know SAI</strong><span>Discover ways we can work together</span></button>
+              </div>
+            </section>`;
+          target.querySelectorAll("[data-prompt]").forEach((button) => button.addEventListener("click", () => {
+            $("#prompt").value = button.dataset.prompt;
+            resizePrompt();
+            $("#prompt").focus();
+          }));
+        } else {
+          target.innerHTML = `<section class="messages">${chat.messages.map((message, index) => {
+            const isLastAssistant = message.role === "assistant" && index === chat.messages.length - 1;
+            const isStreaming = appState.busy && message.id === appState.streamingMessageId;
+            const content = message.role === "assistant" ? renderMarkdown(message.content) : escapeHtml(message.content);
+            const error = message.id === appState.errorMessageId;
+            return `<article class="message ${message.role}">
+              <div class="avatar">${message.role === "assistant" ? icons.assistant : icons.user}</div>
+              <div class="message-body">
+                <div class="message-heading">${message.role === "assistant" ? "SAI" : "You"} <time>${formatTime(message.time)}</time></div>
+                <div class="message-content">${content}${isStreaming ? '<span class="stream-cursor"></span>' : ""}</div>
+                ${message.role === "assistant" && message.content ? `<div class="message-tools"><button class="icon-button copy-button" data-copy-index="${index}" title="Copy response" aria-label="Copy response">${icons.copy}</button></div>` : ""}
+                ${error ? '<div class="retry-row"><span>Response interrupted.</span><button class="retry-button" data-retry>Retry</button></div>' : ""}
+              </div>
+            </article>`;
+          }).join("")}</section>`;
+          target.querySelectorAll("[data-copy-index]").forEach((button) => button.addEventListener("click", async () => {
+            const message = chat.messages[Number(button.dataset.copyIndex)];
+            try {
+              await navigator.clipboard.writeText(message.content);
+              showToast("Response copied");
+            } catch (error) {
+              console.error("Clipboard copy failed.", error);
+              showToast("Clipboard access was denied by this browser.");
+            }
+          }));
+          const retry = target.querySelector("[data-retry]");
+          if (retry) retry.addEventListener("click", retryLastResponse);
+          requestAnimationFrame(() => { target.scrollTop = target.scrollHeight; });
+        }
+        $("#clearChat").disabled = !chat || !chat.messages.length || appState.busy;
+        $("#clearChat").style.opacity = $("#clearChat").disabled ? ".38" : "1";
+        $("#modelSelect").disabled = appState.busy;
+        $("#modelHint").textContent = appState.model;
+        updateSendButton();
+      }
+
+      function formatTime(value) {
+        if (!value) return "";
+        return new Date(value).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
+      }
+
+      function highlightCode(code) {
+        const escaped = escapeHtml(code);
+        const pattern = /(\/\/[^\n]*|#[^\n]*|\/\*[\s\S]*?\*\/|"(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*'|`(?:\\.|[^`\\])*`|\b(?:const|let|var|function|return|if|else|for|while|class|new|import|from|export|default|async|await|try|catch|throw|true|false|null|undefined|def|print|in|of|this|public|private|static|void|int|string|bool|fn|mut|pub|use|match|struct|impl|package|func|type|select|case|break|continue)\b|\b\d+(?:\.\d+)?\b)/g;
+        return escaped.replace(pattern, (token) => {
+          let className = "token-keyword";
+          if (/^(?:\/\/|#|\/\*)/.test(token)) className = "token-comment";
+          else if (/^["'`]/.test(token)) className = "token-string";
+          else if (/^\d/.test(token)) className = "token-number";
+          return `<span class="${className}">${token}</span>`;
+        });
+      }
+
+      function renderInline(text) {
+        const code = [];
+        let safe = text.replace(/`([^`]+)`/g, (_, value) => {
+          code.push(`<code>${escapeHtml(value)}</code>`);
+          return `\u0000${code.length - 1}\u0000`;
+        });
+        safe = escapeHtml(safe);
+        safe = safe.replace(/\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g, (_, label, url) =>
+          `<a href="${url}" target="_blank" rel="noopener noreferrer">${label}</a>`);
+        safe = safe.replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
+          .replace(/__(.+?)__/g, "<strong>$1</strong>")
+          .replace(/\*(.+?)\*/g, "<em>$1</em>")
+          .replace(/_(.+?)_/g, "<em>$1</em>");
+        return safe.replace(/\u0000(\d+)\u0000/g, (_, index) => code[Number(index)]);
+      }
+
+      function renderMarkdown(markdown) {
+        const lines = String(markdown).replace(/\r\n?/g, "\n").split("\n");
+        const output = [];
+        let paragraph = [];
+        let list = null;
+        function flushParagraph() {
+          if (paragraph.length) output.push(`<p>${paragraph.map(renderInline).join("<br>")}</p>`);
+          paragraph = [];
+        }
+        function flushList() {
+          if (list) output.push(`</${list}>`);
+          list = null;
+        }
+        for (let i = 0; i < lines.length; i++) {
+          const line = lines[i];
+          const fence = line.match(/^\s*```([\w.+-]*)\s*$/);
+          if (fence) {
+            flushParagraph();
+            flushList();
+            const codeLines = [];
+            i++;
+            while (i < lines.length && !/^\s*```\s*$/.test(lines[i])) codeLines.push(lines[i++]);
+            const language = fence[1] || "code";
+            output.push(`<div class="code-block"><div class="code-header"><span>${escapeHtml(language)}</span><span>CODE</span></div><pre><code>${highlightCode(codeLines.join("\n"))}</code></pre></div>`);
+            continue;
+          }
+          if (!line.trim()) { flushParagraph(); flushList(); continue; }
+          const heading = line.match(/^(#{1,3})\s+(.+)$/);
+          if (heading) {
+            flushParagraph(); flushList();
+            const level = heading[1].length;
+            output.push(`<h${level}>${renderInline(heading[2])}</h${level}>`);
+            continue;
+          }
+          const item = line.match(/^\s*(?:[-*+]|\d+[.)])\s+(.+)$/);
+          if (item) {
+            flushParagraph();
+            const nextList = /^\s*\d+[.)]\s/.test(line) ? "ol" : "ul";
+            if (list !== nextList) { flushList(); output.push(`<${nextList}>`); list = nextList; }
+            output.push(`<li>${renderInline(item[1])}</li>`);
+            continue;
+          }
+          if (/^\s*>/.test(line)) {
+            flushParagraph(); flushList();
+            output.push(`<blockquote>${renderInline(line.replace(/^\s*>\s?/, ""))}</blockquote>`);
+            continue;
+          }
+          flushList();
+          paragraph.push(line);
+        }
+        flushParagraph();
+        flushList();
+        return output.join("");
+      }
+
+      function setConnection(state, detail) {
+        const dot = $("#statusDot");
+        dot.className = `status-dot ${state}`;
+        $("#connectionText").textContent = state === "online" ? "Connected" : state === "checking" ? "Connecting…" : "Offline";
+        $("#connectionSub").textContent = detail;
+      }
+
+      function normalizeEndpoint(value) {
+        let url;
+        try { url = new URL(value.trim()); } catch (_) { throw new Error("Enter a valid server URL, such as http://192.168.101.12:11434/v1."); }
+        if (!["http:", "https:"].includes(url.protocol) || url.username || url.password || url.search || url.hash) {
+          throw new Error("Use an http or https base URL without credentials, query, or fragment.");
+        }
+        let base = url.toString().replace(/\/+$/, "");
+        base = base.replace(/\/(?:models|chat\/completions)$/i, "");
+        return base;
+      }
+
+      function requestUrl(path) {
+        return `${normalizeEndpoint(appState.endpoint)}${path}`;
+      }
+
+      function createTimeoutSignal(milliseconds) {
+        if (typeof AbortSignal !== "undefined" && typeof AbortSignal.timeout === "function") {
+          return { signal: AbortSignal.timeout(milliseconds), clear: () => {} };
+        }
+        const controller = new AbortController();
+        const timer = setTimeout(() => controller.abort(), milliseconds);
+        return { signal: controller.signal, clear: () => clearTimeout(timer) };
+      }
+
+      async function fetchModels() {
+        setConnection("checking", "Checking Ollama server");
+        const timeout = createTimeoutSignal(7000);
+        try {
+          const response = await fetch(requestUrl("/models"), {
+            headers: { Authorization: `Bearer ${appState.apiKey}` },
+            signal: timeout.signal
+          });
+          if (!response.ok) throw new Error(`Ollama returned HTTP ${response.status}`);
+          const data = await response.json();
+          if (!data || !Array.isArray(data.data)) throw new Error("The server returned an invalid models response.");
+          const remoteModels = data.data.map((item) => item && item.id).filter((id) => typeof id === "string" && id.trim());
+          if (!remoteModels.length) throw new Error("Ollama did not report any available models.");
+          appState.models = [...new Set(remoteModels)];
+          if (!appState.models.includes(appState.model)) appState.model = appState.models.includes(DEFAULT_MODEL) ? DEFAULT_MODEL : appState.models[0];
+          renderModels();
+          saveState();
+          setConnection("online", `${appState.models.length} model${appState.models.length === 1 ? "" : "s"} available`);
+          return true;
+        } catch (error) {
+          console.error("Ollama connection check failed.", error);
+          setConnection("offline", error.name === "TimeoutError" ? "Server request timed out" : "Check server and network");
+          showToast(error.message || "Could not connect to Ollama.");
+          return false;
+        } finally {
+          timeout.clear();
+        }
+      }
+
+      function renderModels() {
+        const selector = $("#modelSelect");
+        const models = [...new Set([...appState.models, ...(appState.models.includes(appState.model) ? [] : [appState.model])])];
+        selector.innerHTML = models.map((model) => `<option value="${escapeHtml(model)}">${escapeHtml(model)}</option>`).join("");
+        selector.value = appState.model;
+        $("#modelHint").textContent = appState.model;
+      }
+
+      function titleFromPrompt(text) {
+        const clean = text.trim().replace(/\s+/g, " ");
+        return clean.length > 42 ? `${clean.slice(0, 39)}…` : clean || "New conversation";
+      }
+
+      function updateSendButton() {
+        const button = $("#sendButton");
+        button.disabled = !appState.busy && !$("#prompt").value.trim();
+        if (appState.busy) {
+          button.setAttribute("aria-label", "Stop response");
+          button.innerHTML = '<svg viewBox="0 0 24 24" fill="none"><rect x="7" y="7" width="10" height="10" rx="2" fill="currentColor"/></svg>';
+        } else {
+          button.setAttribute("aria-label", "Send message");
+          button.innerHTML = '<svg viewBox="0 0 24 24" fill="none"><path d="M12 19V5m-6 6 6-6 6 6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+        }
+      }
+
+      function resizePrompt() {
+        const input = $("#prompt");
+        input.style.height = "auto";
+        input.style.height = `${Math.min(input.scrollHeight, 180)}px`;
+        updateSendButton();
+      }
+
+      function updateConversation() {
+        const chat = activeChat();
+        if (chat) {
+          chat.updatedAt = Date.now();
+          appState.conversations.sort((a, b) => b.updatedAt - a.updatedAt);
+        }
+        saveState();
+      }
+
+      async function sendMessage(text) {
+        if (appState.busy) return;
+        const prompt = String(text).trim();
+        if (!prompt) return;
+        if (!activeChat()) {
+          const chat = { id: newId(), title: titleFromPrompt(prompt), updatedAt: Date.now(), messages: [] };
+          appState.conversations.unshift(chat);
+          appState.activeId = chat.id;
+        }
+        const chat = activeChat();
+        if (!chat) return;
+        if (!chat.messages.length) chat.title = titleFromPrompt(prompt);
+        chat.messages.push({ role: "user", content: prompt, time: Date.now() });
+        const answer = { role: "assistant", content: "", time: Date.now(), id: newId() };
+        chat.messages.push(answer);
+        appState.busy = true;
+        appState.streamingMessageId = answer.id;
+        appState.errorMessageId = null;
+        appState.requestTimedOut = false;
+        appState.abortController = new AbortController();
+        let timeoutId = setTimeout(() => {
+          appState.requestTimedOut = true;
+          if (appState.abortController) appState.abortController.abort();
+        }, 120000);
+        const resetRequestTimeout = () => {
+          clearTimeout(timeoutId);
+          timeoutId = setTimeout(() => {
+            appState.requestTimedOut = true;
+            if (appState.abortController) appState.abortController.abort();
+          }, 120000);
+        };
+        let serverReached = false;
+        $("#prompt").value = "";
+        resizePrompt();
+        updateConversation();
+        render();
+        try {
+          const response = await fetch(requestUrl("/chat/completions"), {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${appState.apiKey}`
+            },
+            body: JSON.stringify({
+              model: appState.model,
+              messages: [{ role: "system", content: SYSTEM_PROMPT }, ...chat.messages
+                .filter((message) => message !== answer && ["user", "assistant"].includes(message.role))
+                .map((message) => ({ role: message.role, content: message.content }))],
+              stream: true
+            }),
+            signal: appState.abortController.signal
+          });
+          serverReached = true;
+          resetRequestTimeout();
+          if (!response.ok) {
+            const detail = await response.text().catch(() => "");
+            throw new Error(`Ollama returned HTTP ${response.status}${detail ? `: ${detail.slice(0, 240)}` : ""}`);
+          }
+          if (!response.body) throw new Error("This browser does not support streamed responses.");
+          const contentType = response.headers.get("content-type") || "";
+          if (contentType.toLowerCase().includes("text/event-stream")) {
+            await readStream(response, answer, chat, resetRequestTimeout);
+          } else {
+            const result = await response.json();
+            const choice = result && Array.isArray(result.choices) && result.choices[0];
+            const content = choice && choice.message && choice.message.content;
+            if (typeof content === "string") answer.content = content;
+            else if (Array.isArray(content)) {
+              answer.content = content.map((part) => typeof part === "string" ? part : (part && part.text) || "").join("");
+            } else if (result && result.error && result.error.message) {
+              throw new Error(result.error.message);
+            } else {
+              throw new Error("Ollama returned an invalid chat completion.");
+            }
+          }
+          if (!answer.content.trim()) throw new Error("The model returned an empty response.");
+          setConnection("online", "Response received successfully");
+        } catch (error) {
+          if (error.name === "AbortError" && !appState.requestTimedOut) {
+            if (answer.content) setConnection("online", "Response stopped");
+            else {
+              chat.messages.splice(chat.messages.indexOf(answer), 1);
+              setConnection("online", "Response stopped");
+            }
+          } else {
+            console.error("Ollama chat request failed.", error);
+            appState.errorMessageId = answer.id;
+            const timedOut = appState.requestTimedOut || error.name === "TimeoutError";
+            setConnection(serverReached ? "online" : "offline", timedOut ? "Server request timed out" : serverReached ? "Server returned an error" : "Request failed — check connection");
+            showToast(appState.requestTimedOut ? "Response timed out. Check the connection and retry." : error.message || "Could not get a response from Ollama.");
+          }
+        } finally {
+          clearTimeout(timeoutId);
+          appState.busy = false;
+          appState.abortController = null;
+          appState.requestTimedOut = false;
+          appState.streamingMessageId = null;
+          updateConversation();
+          render();
+        }
+      }
+
+      async function readStream(response, answer, chat, resetRequestTimeout) {
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder();
+        let buffer = "";
+        let redrawTimer = null;
+        let finished = false;
+        function processLines(final) {
+          const lines = buffer.split("\n");
+          buffer = lines.pop() || "";
+          if (final && buffer) lines.push(buffer);
+          for (const rawLine of lines) {
+            const line = rawLine.trim();
+            if (!line.startsWith("data:")) continue;
+            const payload = line.slice(5).trim();
+            if (!payload || payload === "[DONE]") { finished = payload === "[DONE]"; continue; }
+            let event;
+            try { event = JSON.parse(payload); } catch (_) { throw new Error("Ollama returned malformed streaming data."); }
+            const piece = event.choices && event.choices[0] && event.choices[0].delta && event.choices[0].delta.content;
+            if (typeof piece === "string") answer.content += piece;
+            else if (Array.isArray(piece)) {
+              answer.content += piece.map((part) => typeof part === "string" ? part : (part && part.text) || "").join("");
+            }
+          }
+        }
+        while (!finished) {
+          const { value, done } = await reader.read();
+          if (value && value.length) resetRequestTimeout();
+          buffer += decoder.decode(value || new Uint8Array(), { stream: !done });
+          processLines(done);
+          if (answer.content && !redrawTimer) {
+            redrawTimer = setTimeout(() => {
+              redrawTimer = null;
+              if (activeChat() === chat && appState.busy) render();
+            }, 45);
+          }
+          if (done) break;
+        }
+        if (redrawTimer) clearTimeout(redrawTimer);
+      }
+
+      async function retryLastResponse() {
+        const chat = activeChat();
+        if (!chat || appState.busy) return;
+        const lastAssistant = chat.messages[chat.messages.length - 1];
+        if (!lastAssistant || lastAssistant.role !== "assistant") return;
+        chat.messages.pop();
+        const lastUser = [...chat.messages].reverse().find((message) => message.role === "user");
+        if (!lastUser) return;
+        chat.messages.pop();
+        const prompt = lastUser.content;
+        render();
+        await sendMessage(prompt);
+      }
+
+      function showToast(message) {
+        const root = $("#toastRoot");
+        root.innerHTML = `<div class="toast">${escapeHtml(message)}</div>`;
+        clearTimeout(showToast.timer);
+        showToast.timer = setTimeout(() => { root.innerHTML = ""; }, 3000);
+      }
+
+      function showSettings() {
+        $("#overlayRoot").innerHTML = `
+          <div class="modal-backdrop" id="modalBackdrop">
+            <section class="modal" role="dialog" aria-modal="true" aria-labelledby="settingsTitle">
+              <div class="modal-head"><h2 id="settingsTitle">Connection settings</h2><button class="icon-button" id="closeSettings" aria-label="Close settings">×</button></div>
+              <form id="settingsForm">
+                <div class="field"><label for="endpointInput">Ollama API base URL</label><input id="endpointInput" type="url" required autocomplete="url" value="${escapeHtml(appState.endpoint)}" placeholder="http://192.168.101.12:11434/v1"><div class="field-help">Use your Ollama server address, including the OpenAI-compatible /v1 path.</div></div>
+                <div class="field"><label for="apiKeyInput">API key</label><input id="apiKeyInput" type="password" autocomplete="off" value="${escapeHtml(appState.apiKey)}"><div class="field-help">Held in memory only and never saved to browser storage. Ollama commonly accepts the placeholder “ollama”.</div></div>
+                <div class="modal-message" id="settingsError" role="status"></div>
+                <div class="modal-actions"><button class="secondary-button" type="button" id="cancelSettings">Cancel</button><button class="primary-button" type="submit" id="saveSettings">Save &amp; test connection</button></div>
+              </form>
+            </section>
+          </div>`;
+        const close = () => { $("#overlayRoot").innerHTML = ""; };
+        $("#closeSettings").addEventListener("click", close);
+        $("#cancelSettings").addEventListener("click", close);
+        $("#modalBackdrop").addEventListener("click", (event) => { if (event.target.id === "modalBackdrop") close(); });
+        $("#settingsForm").addEventListener("submit", async (event) => {
+          event.preventDefault();
+          const errorElement = $("#settingsError");
+          const saveButton = $("#saveSettings");
+          let endpoint;
+          try { endpoint = normalizeEndpoint($("#endpointInput").value); }
+          catch (error) { errorElement.textContent = error.message; return; }
+          const apiKey = $("#apiKeyInput").value.trim();
+          if (!apiKey) { errorElement.textContent = "Enter an API key (use “ollama” for a default local server)."; return; }
+          appState.endpoint = endpoint;
+          appState.apiKey = apiKey;
+          saveButton.disabled = true;
+          errorElement.style.color = "#a9abb9";
+          errorElement.textContent = "Testing connection…";
+          saveState();
+          const connected = await fetchModels();
+          if (connected) close();
+          else {
+            errorElement.style.color = "";
+            errorElement.textContent = "Connection failed. Check the URL, network, and Ollama CORS settings, then try again.";
+            saveButton.disabled = false;
+          }
+        });
+        $("#endpointInput").focus();
+      }
+
+      $("#newChat").addEventListener("click", createConversation);
+      $("#openSettings").addEventListener("click", showSettings);
+      $("#toggleSidebar").addEventListener("click", () => $("#sidebar").classList.toggle("open"));
+      $("#modelSelect").addEventListener("change", (event) => {
+        appState.model = event.target.value;
+        saveState();
+        $("#modelHint").textContent = appState.model;
+      });
+      $("#clearChat").addEventListener("click", () => {
+        const chat = activeChat();
+        if (!chat || appState.busy) return;
+        appState.conversations = appState.conversations.filter((item) => item.id !== chat.id);
+        appState.activeId = null;
+        appState.errorMessageId = null;
+        saveState();
+        render();
+      });
+      $("#composer").addEventListener("submit", async (event) => {
+        event.preventDefault();
+        if (appState.busy) {
+          if (appState.abortController) appState.abortController.abort();
+          return;
+        }
+        const value = $("#prompt").value;
+        if (!value.trim()) return;
+        await sendMessage(value);
+      });
+      $("#prompt").addEventListener("input", resizePrompt);
+      $("#prompt").addEventListener("keydown", (event) => {
+        if (event.key === "Enter" && !event.shiftKey && !event.isComposing) {
+          event.preventDefault();
+          $("#composer").requestSubmit();
+        }
+      });
+      window.addEventListener("keydown", (event) => {
+        if (event.key === "Escape") $("#overlayRoot").innerHTML = "";
+      });
+      window.addEventListener("online", () => fetchModels());
+      window.addEventListener("offline", () => setConnection("offline", "This device is offline"));
+
+      loadState();
+      renderModels();
+      render();
+      fetchModels();
+    })();
   </script>
-
 </body>
 </html>
-
